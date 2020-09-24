@@ -79,6 +79,8 @@
       let minDecade = Math.floor(Number(minMaxYear[0])/10);
       let maxDecade = Math.floor(Number(minMaxYear[1])/10);
 
+      let freqByMonth = getFrequencyByKey(data, "Month");
+
       // look at decades
       let yScale = d3.scaleLinear()
         .domain([minDecade, maxDecade])
@@ -347,6 +349,78 @@
         .style("font-size", 12)
         .style("font-family", "Cabin");
 
+        // build small bar chart
+        let freqByMonthKey = getFrequencyByKey(data, "Month");
+        let freqByMonthKeys = Array.from(freqByMonthKey.keys())
+        let freqByMonthEntries = Array.from(freqByMonthKey.values())
+        let barXScale = d3.scaleLinear()
+          .domain([0, 12])
+          .range([50, 300]);
+
+        let barYScale = d3.scaleLinear()
+          .domain([freqByMonthEntries[0], 0])
+          .range([825, 950]);
+
+        let mapNumToString = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+        let firstLetterNames = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+
+      for (var i = 0; i < 12; i++) {
+        svgOriginal.append("rect")
+          .attr("x", barXScale(i))
+          .attr("y", function(d) {
+            return barYScale(freqByMonth.get(mapNumToString[i]));
+          })
+          .attr("width", 15)
+          .attr("height", function(d) {
+            return barYScale(0)-barYScale(freqByMonth.get(mapNumToString[i]));
+          })
+          .style("fill", greenColor);
+        svgOriginal.append("text")
+          .attr("x", barXScale(i)+7.5)
+          .attr("y", barYScale(-100))
+          .text(firstLetterNames[i])
+          .style("font-family", "Cabin")
+          .style("font-size", 12)
+          .style("text-anchor", "middle")
+          .style("font-weight", "bold");
+          svgOriginal.append("g").call(d3.axisLeft(barYScale).ticks(5))
+            .attr("transform", "translate(40, 0)")
+            .style("font-family", "Cabin")
+            .style("font-weight", "normal")
+            .style("font-size", 12)
+            .select(".domain").remove();
+      }
+      svgOriginal.append("text")
+        .attr("x", barXScale(6)+7.5)
+        .attr("y", 800)
+        .text("Aggregate Trees Planted By Month")
+        .style("font-family", "Cabin")
+        .style("font-size", 12)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold");
+
+      // add tooltip for cw
+      svgOriginal.append("text")
+        .attr("x", 160)
+        .attr("y", 190)
+        .text("↷ Calendar year")
+        .style("font-family", "Cabin")
+        .style("font-size", 12)
+        .style("text-anchor", "start");
+      svgOriginal.append("text")
+        .attr("x", 160)
+        .attr("y", 190+15)
+        .text("progresses clockwise")
+        .style("font-family", "Cabin")
+        .style("font-size", 12)
+        .style("text-anchor", "start");
+      svgOriginal.append("text")
+        .attr("x", 160)
+        .attr("y", 190+30)
+        .text("at same radius")
+        .style("font-family", "Cabin")
+        .style("font-size", 12)
+        .style("text-anchor", "start");
     }
 
     function drawTopFiveVis(data, svgClass, topFive) {
@@ -587,7 +661,7 @@
       svg.append("text")
         .attr("x", 700)
         .attr("y", 600)
-        .text("Note that the top 3 trees are more popular in the")
+        .text("Note that the top 3 trees are more commonly planted in the")
         .style("font-family", "Cabin")
         .style("font-size", 12);
       svg.append("text")
